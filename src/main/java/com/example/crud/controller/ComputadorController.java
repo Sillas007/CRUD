@@ -12,11 +12,9 @@ import java.util.List;
 @RequestMapping("/computadores")
 public class ComputadorController {
 
-    private final List<Computador> computadores = new ArrayList<>();
-    private int proximoId = 1;
-
     @GetMapping
     public String listarComputadores(Model model) {
+        List<Computador> computadores = new ArrayList<>(Computador.findAll());
         model.addAttribute("computadores", computadores);
         return "computadores/lista";
     }
@@ -28,16 +26,23 @@ public class ComputadorController {
     }
 
     @PostMapping("/salvar")
-    public String salvarComputador(@ModelAttribute Computador computador) {
-        if (computador.getId() == null) {
-            computador.setId(proximoId++);
-            computadores.add(computador);
+    public String salvarComputador(@RequestParam(required = false) String id,
+                                   @RequestParam String processador,
+                                   @RequestParam String ram,
+                                   @RequestParam String armazenamento) {
+        if (id == null || id.isBlank()) {
+            Computador computador = new Computador();
+            computador.setProcessador(processador);
+            computador.setRam(ram);
+            computador.setArmazenamento(armazenamento);
+            computador.saveIt();
         } else {
-            for (int i = 0; i < computadores.size(); i++) {
-                if (computadores.get(i).getId().equals(computador.getId())) {
-                    computadores.set(i, computador);
-                    break;
-                }
+            Computador computador = Computador.findById(Integer.parseInt(id));
+            if (computador != null) {
+                computador.setProcessador(processador);
+                computador.setRam(ram);
+                computador.setArmazenamento(armazenamento);
+                computador.saveIt();
             }
         }
         return "redirect:/computadores";
@@ -45,10 +50,7 @@ public class ComputadorController {
 
     @GetMapping("/editar/{id}")
     public String exibirFormularioEdicao(@PathVariable Integer id, Model model) {
-        Computador computadorEncontrado = computadores.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        Computador computadorEncontrado = Computador.findById(id);
         if (computadorEncontrado != null) {
             model.addAttribute("computador", computadorEncontrado);
             return "computadores/form";
@@ -58,7 +60,10 @@ public class ComputadorController {
 
     @GetMapping("/deletar/{id}")
     public String deletarComputador(@PathVariable Integer id) {
-        computadores.removeIf(c -> c.getId().equals(id));
+        Computador computador = Computador.findById(id);
+        if (computador != null) {
+            computador.delete();
+        }
         return "redirect:/computadores";
     }
 }

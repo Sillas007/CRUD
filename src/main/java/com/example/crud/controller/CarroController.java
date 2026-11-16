@@ -12,11 +12,9 @@ import java.util.List;
 @RequestMapping("/carros")
 public class CarroController {
 
-    private final List<Carro> carros = new ArrayList<>();
-    private int proximoId = 1;
-
     @GetMapping
     public String listarCarros(Model model) {
+        List<Carro> carros = new ArrayList<>(Carro.findAll());
         model.addAttribute("carros", carros);
         return "carros/lista";
     }
@@ -28,16 +26,23 @@ public class CarroController {
     }
 
     @PostMapping("/salvar")
-    public String salvarCarro(@ModelAttribute Carro carro) {
-        if (carro.getId() == null) {
-            carro.setId(proximoId++);
-            carros.add(carro);
+    public String salvarCarro(@RequestParam(required = false) String id,
+                              @RequestParam String modelo,
+                              @RequestParam Integer ano,
+                              @RequestParam String faixaPreco) {
+        if (id == null || id.isBlank()) {
+            Carro carro = new Carro();
+            carro.setModelo(modelo);
+            carro.setAno(ano);
+            carro.setFaixaPreco(faixaPreco);
+            carro.saveIt();
         } else {
-            for (int i = 0; i < carros.size(); i++) {
-                if (carros.get(i).getId().equals(carro.getId())) {
-                    carros.set(i, carro);
-                    break;
-                }
+            Carro carro = Carro.findById(Integer.parseInt(id));
+            if (carro != null) {
+                carro.setModelo(modelo);
+                carro.setAno(ano);
+                carro.setFaixaPreco(faixaPreco);
+                carro.saveIt();
             }
         }
         return "redirect:/carros";
@@ -45,10 +50,7 @@ public class CarroController {
 
     @GetMapping("/editar/{id}")
     public String exibirFormularioEdicao(@PathVariable Integer id, Model model) {
-        Carro carroEncontrado = carros.stream()
-                .filter(c -> c.getId().equals(id))
-                .findFirst()
-                .orElse(null);
+        Carro carroEncontrado = Carro.findById(id);
         if (carroEncontrado != null) {
             model.addAttribute("carro", carroEncontrado);
             return "carros/form";
@@ -58,7 +60,10 @@ public class CarroController {
 
     @GetMapping("/deletar/{id}")
     public String deletarCarro(@PathVariable Integer id) {
-        carros.removeIf(c -> c.getId().equals(id));
+        Carro carro = Carro.findById(id);
+        if (carro != null) {
+            carro.delete();
+        }
         return "redirect:/carros";
     }
 }

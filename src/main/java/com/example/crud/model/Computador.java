@@ -1,49 +1,32 @@
 package com.example.crud.model;
 
-public class Computador {
-    private Integer id;
-    private String processador;
-    private String ram;
-    private String armazenamento;
+import org.javalite.activejdbc.Model;
+import org.javalite.activejdbc.annotations.Table;
 
-    public Computador() {}
-
-    public Computador(Integer id, String processador, String ram, String armazenamento) {
-        this.id = id;
-        this.processador = processador;
-        this.ram = ram;
-        this.armazenamento = armazenamento;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+@Table("computadores")
+public class Computador extends Model {
 
     public String getProcessador() {
-        return processador;
+        return getString("processador");
     }
 
     public void setProcessador(String processador) {
-        this.processador = processador;
+        set("processador", processador);
     }
 
     public String getRam() {
-        return ram;
+        return getString("ram");
     }
 
     public void setRam(String ram) {
-        this.ram = ram;
+        set("ram", ram);
     }
 
     public String getArmazenamento() {
-        return armazenamento;
+        return getString("armazenamento");
     }
 
     public void setArmazenamento(String armazenamento) {
-        this.armazenamento = armazenamento;
+        set("armazenamento", armazenamento);
     }
 }
